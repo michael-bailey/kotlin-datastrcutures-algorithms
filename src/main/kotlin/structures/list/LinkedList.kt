@@ -3,37 +3,48 @@ package structures.list
 import algorithms.list.Node
 
 class LinkedList<T> {
-	private val start: SingleNode<T>? = null
+	private var start: SingleNode<T>?
 
 	val isEmpty: Boolean get() = start == null
 	val count: Int get() = start?.count() ?: 0
 
 	constructor() {
-
+		this.start = null
 	}
 
 	constructor(vararg values: T) {
-		values.map { SingleNode(it) }
+		val nodes = values.map { SingleNode(it) }
+		this.start = nodes.firstOrNull()
+		nodes.windowed(2,1) { (first, second) ->
+			first.next = second
+		}
 	}
 
 	fun append(value: T) {
 		val node = SingleNode(value)
-		val last = node.getLast()
-		last.next = node
+		val last = start?.getLast()
+		if (last != null) {
+			last.next = node
+		} else {
+			this.start = node
+		}
 	}
 
 	private class SingleNode<T>(
 		data: T,
-		var next: Node<T>? = null
+		var next: SingleNode<T>? = null
 	): Node<T>(data) {
-		override tailrec fun count(acc: Int): Int {
+		override fun count(acc: Int): Int {
 			if (next == null) return acc
-			return this.count(acc + 1)
+			return this.next!!.count(acc + 1)
 		}
 
-		override tailrec fun getLast(): SingleNode<T> {
-			if (next == null) return this
-			return this.getLast()
+		override fun getLast(): SingleNode<T> {
+			var next: SingleNode<T> = this
+			while (next.next != null) {
+				next = next.next!!
+			}
+			return next
 		}
 	}
 }
